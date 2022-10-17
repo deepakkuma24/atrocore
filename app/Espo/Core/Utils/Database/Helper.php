@@ -72,12 +72,16 @@ class Helper
     /**
      * Get maximum index length. If $tableName is empty get a value for all database tables
      *
-     * @param  string|null $tableName
+     * @param string|null $tableName
      *
      * @return int
      */
     public function getMaxIndexLength($tableName = null, $default = 1000)
     {
+        if ($this->getConfig()->get('database.driver') !== 'pdo_mysql') {
+            return $default;
+        }
+
         $mysqlEngine = $this->getMysqlEngine($tableName);
         if (!$mysqlEngine) {
             return $default;
@@ -120,7 +124,7 @@ class Helper
     /**
      * Get table/database tables engine. If $tableName is empty get a value for all database tables
      *
-     * @param  string|null $tableName
+     * @param string|null $tableName
      *
      * @return string
      */
@@ -148,12 +152,20 @@ class Helper
     /**
      * Check if full text supports. If $tableName is empty get a value for all database tables
      *
-     * @param  string $tableName
+     * @param string $tableName
      *
      * @return boolean
      */
     public function isSupportsFulltext($tableName = null, $default = false)
     {
+        if ($this->getConfig()->get('database.driver') === 'pdo_pgsql') {
+            return true;
+        }
+
+        if ($this->getConfig()->get('database.driver') !== 'pdo_mysql') {
+            return false;
+        }
+
         $mysqlEngine = $this->getMysqlEngine($tableName);
         if (!$mysqlEngine) {
             return $default;

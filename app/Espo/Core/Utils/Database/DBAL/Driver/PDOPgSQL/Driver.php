@@ -33,35 +33,34 @@
  * This software is not allowed to be used in Russia and Belarus.
  */
 
-declare(strict_types=1);
+namespace Espo\Core\Utils\Database\DBAL\Driver\PDOPgSQL;
 
-namespace Espo\Core\Factories;
+use Doctrine\DBAL\Driver\AbstractMySQLDriver;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 
-use Espo\Core\Container;
-use Espo\Core\Interfaces\Factory;
-
-class Connection implements Factory
+class Driver extends AbstractMySQLDriver
 {
-    protected static array $drivers
-        = [
-            'mysqli'    => '\Espo\Core\Utils\Database\DBAL\Driver\Mysqli\Driver',
-            'pdo_mysql' => '\Espo\Core\Utils\Database\DBAL\Driver\PDOMySql\Driver',
-            'pdo_pgsql' => '\Espo\Core\Utils\Database\DBAL\Driver\PDOPgSQL\Driver',
-        ];
-
-
-    public function create(Container $container)
+    /**
+     * {@inheritdoc}
+     */
+    public function connect(array $params)
     {
-        return self::createConnection($container->get('config')->get('database'));
+        return (new \Doctrine\DBAL\Driver\PDO\PgSQL\Driver())->connect($params);
     }
 
-    public static function createConnection(array $params): \Doctrine\DBAL\Connection
+    /**
+     * {@inheritdoc}
+     */
+    public function getDatabasePlatform()
     {
-        if (!empty(self::$drivers[$params['driver']])) {
-            $params['driverClass'] = self::$drivers[$params['driver']];
-            unset($params['driver']);
-        }
+        return new \Doctrine\DBAL\Platforms\PostgreSQLPlatform();
+    }
 
-        return \Doctrine\DBAL\DriverManager::getConnection($params, new \Doctrine\DBAL\Configuration());
+    /**
+     * {@inheritdoc}
+     */
+    public function getSchemaManager(\Doctrine\DBAL\Connection $conn, AbstractPlatform $platform)
+    {
+        return new \Doctrine\DBAL\Schema\PostgreSQLSchemaManager($conn, $platform);
     }
 }
