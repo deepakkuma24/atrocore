@@ -37,6 +37,7 @@ namespace Espo\Repositories;
 
 use Espo\Core\Templates\Repositories\Base;
 use Espo\ORM\Entity;
+use Espo\Core\Exceptions\BadRequest;
 
 class ExtensibleEnumOption extends Base
 {
@@ -71,5 +72,40 @@ class ExtensibleEnumOption extends Base
                 $this->save($entity);
             }
         }
+    }
+
+    protected function beforeRemove(Entity $entity, array $options = [])
+    {
+        $this->protectedListPacking($entity);
+        parent::beforeRemove($entity, $options);
+
+        $this->getEntityManager()->getRepository('OrderItem')->where(['orderId' => $entity->get('id')])->removeCollection();
+    }
+
+    protected function protectedListPacking(Entity $entity){
+        $packingOptions = [
+            'bottleIdPacking',
+            'boxIdPacking',
+            'oneIdPacking',
+            'caseIdPacking',
+            'cartonIdPacking',
+            'packetIdPacking',
+            'palletIdPacking',
+            'packIdPacking',
+            'rollIdPacking'
+        ];
+
+        if(in_array($entity->id, $packingOptions)){
+            throw new BadRequest(
+                $this->getInjection('language')->translate('packingOptionsForbiden', 'exceptions', 'ExtensibleEnum')
+            );
+        }
+    }
+
+    protected function init()
+    {
+        parent::init();
+
+        $this->addDependency('language');
     }
 }

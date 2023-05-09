@@ -10,5 +10,8 @@
   },
   "labels": {
     "Create ExtensibleEnumOption": "Create List Option"
+  },
+  "exceptions": {
+    "packingOptionsForbiden": "This list option can not be deleted"
   }
 }
